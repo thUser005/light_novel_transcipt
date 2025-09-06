@@ -1,17 +1,36 @@
 import json
 import time
+import os
+import gdown
 from gpt4all import GPT4All
 
-# Load GPT4All model
-model = GPT4All("gpt4all-j-v1.3-groovy.bin")
+# --- Step 1: Download model file from Google Drive ---
+# Your Google Drive share link:
+drive_url = "https://drive.google.com/uc?id=1c2XOp78-KgIECyMWpvhKyDVj74KiFv5L"
+
+# Local save path
+model_dir = "models"
+os.makedirs(model_dir, exist_ok=True)
+model_path = os.path.join(model_dir, "gpt4all-j-v1.3-groovy.bin")
+
+# Download if not exists
+if not os.path.exists(model_path):
+    print("📥 Downloading model from Google Drive...")
+    gdown.download(drive_url, model_path, quiet=False)
+else:
+    print("✅ Model already exists locally")
+
+# --- Step 2: Load GPT4All model from downloaded path ---
+model = GPT4All("gpt4all-j-v1.3-groovy.bin", model_path=model_dir)
 print("✅ Model loaded successfully")
 
-# Load pages_text.json
+# --- Step 3: Load pages_text.json ---
 with open("pages_text.json", "r", encoding="utf-8") as f:
     pages_text = json.load(f)
 
 output_transcripts = {}
 
+# --- Step 4: Generate transcripts ---
 for page_num, page_text in pages_text.items():
     prompt = f"""
     You are given text from a novel page. Separate it into a transcript format:
@@ -48,11 +67,8 @@ for page_num, page_text in pages_text.items():
     print(f"\n✅ {page_num} transcript generated\n")
     time.sleep(1)
 
-# Save final structured transcript
+# --- Step 5: Save output.json ---
 with open("output.json", "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
-
-
-
