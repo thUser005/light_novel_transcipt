@@ -1,4 +1,4 @@
-import jso
+import json
 import time
 from gpt4all import GPT4All
 
@@ -53,4 +53,5 @@ with open("output.json", "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
+
 
