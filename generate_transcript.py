@@ -5,23 +5,23 @@ import gdown
 from gpt4all import GPT4All
 
 # --- Step 1: Download model file from Google Drive ---
-# Your Google Drive share link:
+# Replace with your Google Drive file ID
 drive_url = "https://drive.google.com/uc?id=1c2XOp78-KgIECyMWpvhKyDVj74KiFv5L"
 
 # Local save path
 model_dir = "models"
 os.makedirs(model_dir, exist_ok=True)
-model_path = os.path.join(model_dir, "gpt4all-j-v1.3-groovy.bin")
+model_path = os.path.join(model_dir, "Meta-Llama-3-8B-Instruct.Q4_0.gguf")
 
-# Download if not exists
+# Download only if not exists
 if not os.path.exists(model_path):
-    print("📥 Downloading model from Google Drive...")
+    print("📥 Downloading Meta-Llama-3-8B-Instruct.Q4_0.gguf from Google Drive...")
     gdown.download(drive_url, model_path, quiet=True)
 else:
     print("✅ Model already exists locally")
 
 # --- Step 2: Load GPT4All model from downloaded path ---
-model = GPT4All("gpt4all-j-v1.3-groovy.bin", model_path=model_dir,device='cpu')
+model = GPT4All("Meta-Llama-3-8B-Instruct.Q4_0.gguf", model_path=model_dir, device="cpu")
 print("✅ Model loaded successfully")
 
 # --- Step 3: Load pages_text.json ---
@@ -72,5 +72,3 @@ with open("output.json", "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
-
-
