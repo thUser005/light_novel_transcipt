@@ -3,7 +3,7 @@ import time
 from gpt4all import GPT4All
 
 # Load GPT4All model
-model = GPT4All("Meta-Llama-3-8B-Instruct.Q4_0.gguf")
+model = GPT4All("gpt4all-j-v1.3-groovy.bin")
 print("✅ Model loaded successfully")
 
 # Load pages_text.json
@@ -53,5 +53,6 @@ with open("output.json", "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
+
 
 
