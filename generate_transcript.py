@@ -21,7 +21,7 @@ else:
     print("✅ Model already exists locally")
 
 # --- Step 2: Load GPT4All model from downloaded path ---
-model = GPT4All("gpt4all-j-v1.3-groovy.bin", model_path=model_dir)
+model = GPT4All("gpt4all-j-v1.3-groovy.bin", model_path=model_dir,device='cpu')
 print("✅ Model loaded successfully")
 
 # --- Step 3: Load pages_text.json ---
@@ -72,4 +72,5 @@ with open("output.json", "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
+
 
