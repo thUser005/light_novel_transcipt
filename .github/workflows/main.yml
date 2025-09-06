@@ -1,8 +1,10 @@
 name: Generate Transcript and Upload
 
 on:
-  workflow_dispatch:  # manual trigger
-
+  workflow_dispatch:    # manual trigger
+  push:                 # triggers on every push
+    branches:
+      - main           # or any branch you want
 jobs:
   generate_transcript:
     name: Generate Transcript (Python 3.12)
@@ -22,10 +24,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install gpt4all
 
-    - name: Download GPT4All model
-      run: |
-        mkdir -p models
-        wget -O models/Meta-Llama-3-8B-Instruct.Q4_0.gguf https://gpt4all.io/models/Meta-Llama-3-8B-Instruct.Q4_0.gguf
+    # - name: Download GPT4All model
+    #   run: |
+    #     mkdir -p models
+    #     wget -O models/Meta-Llama-3-8B-Instruct.Q4_0.gguf https://gpt4all.io/models/Meta-Llama-3-8B-Instruct.Q4_0.gguf
 
     - name: Generate transcripts
       run: python generate_transcript.py
