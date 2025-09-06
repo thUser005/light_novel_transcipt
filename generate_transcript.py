@@ -16,7 +16,7 @@ model_path = os.path.join(model_dir, "gpt4all-j-v1.3-groovy.bin")
 # Download if not exists
 if not os.path.exists(model_path):
     print("📥 Downloading model from Google Drive...")
-    gdown.download(drive_url, model_path, quiet=False)
+    gdown.download(drive_url, model_path, quiet=True)
 else:
     print("✅ Model already exists locally")
 
@@ -72,3 +72,4 @@ with open("output.json", "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
+
