@@ -27,7 +27,7 @@ print("✅ Model loaded successfully")
 # --- Step 3: Load pages_text.json ---
 with open("pages_text.json", "r", encoding="utf-8") as f:
     pages_text = json.load(f)
-
+pages_text = pages_text[:20]
 output_transcripts = {}
 
 # --- Step 4: Generate transcripts ---
@@ -72,3 +72,4 @@ with open("output.json", "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
+
