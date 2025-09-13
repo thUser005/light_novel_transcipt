@@ -4,9 +4,13 @@ import os
 import gdown
 from gpt4all import GPT4All
 
+from mega_upload import send_file_to_telegram
 # --- Step 1: Download model file from Google Drive ---
 # Replace with your Google Drive file ID
 drive_url = "https://drive.google.com/uc?id=1c2XOp78-KgIECyMWpvhKyDVj74KiFv5L"
+
+input_file = "pages_text.json"
+output_file = 'output.json'
 
 # Local save path
 model_dir = "models"
@@ -25,7 +29,7 @@ model = GPT4All("Meta-Llama-3-8B-Instruct.Q4_0.gguf", model_path=model_dir, devi
 print("✅ Model loaded successfully")
 
 # --- Step 3: Load pages_text.json ---
-with open("pages_text.json", "r", encoding="utf-8") as f:
+with open(input_file, "r", encoding="utf-8") as f:
     pages_text = json.load(f)
 # keep first 20 items
 pages_text = dict(list(pages_text.items())[:20])
@@ -69,9 +73,11 @@ for page_num, page_text in pages_text.items():
     time.sleep(1)
 
 # --- Step 5: Save output.json ---
-with open("output.json", "w", encoding="utf-8") as f:
+with open(output_file, "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
 
+if os.path.exists(output_file):
+    send_file_to_telegram(output_file)
 
