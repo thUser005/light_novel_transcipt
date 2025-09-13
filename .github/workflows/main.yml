@@ -32,20 +32,3 @@ jobs:
     - name: Generate transcripts
       run: python generate_transcript.py
 
-
-
-  upload_mega:
-    name: Upload to MEGA (Python 3.10)
-    runs-on: ubuntu-latest
-    needs: generate_transcript  # waits for transcript generation
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-
-    - name: Upload output.json to MEGA
-      run: |
-        python mega_upload.py
-      env:
-        M_TOKEN: ${{ secrets.T_TOKEN }}

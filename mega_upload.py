@@ -28,4 +28,3 @@ def send_file_to_telegram(file_name: str):
     print(f"✅ File '{file_name}' sent to Telegram successfully")
 
 
-send_file_to_telegram('t.py')
