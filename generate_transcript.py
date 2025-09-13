@@ -4,7 +4,6 @@ import os
 import gdown
 from gpt4all import GPT4All
 
-from mega_upload import send_file_to_telegram
 # --- Step 1: Download model file from Google Drive ---
 # Replace with your Google Drive file ID
 drive_url = "https://drive.google.com/uc?id=1c2XOp78-KgIECyMWpvhKyDVj74KiFv5L"
@@ -32,7 +31,7 @@ print("✅ Model loaded successfully")
 with open(input_file, "r", encoding="utf-8") as f:
     pages_text = json.load(f)
 # keep first 20 items
-pages_text = dict(list(pages_text.items())[:20])
+pages_text = dict(list(pages_text.items())[:5])
 output_transcripts = {}
 
 # --- Step 4: Generate transcripts ---
@@ -77,7 +76,38 @@ with open(output_file, "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
+import os
+import telebot
+
+CHAT_ID = os.getenv("C_ID")
+BOT_TOKEN = os.getenv('TOKEN')
+
+def send_file_to_telegram(file_name: str):
+    """
+    Send a file to a Telegram chat using bot token and chat ID
+    stored in the environment variable T_TOKEN.
+    
+    Format of T_TOKEN should be: BOT_TOKEN_CHATID
+    Example: "1234567890:ABCDEFghIJKLmnoPQRstuVWxyZ_-1001234567890"
+    """
+    # T_TOKEN = os.getenv("T_TOKEN")
+    # if not T_TOKEN:
+    #     raise ValueError("❌ Environment variable T_TOKEN not set")
+
+
+    bot = telebot.TeleBot(BOT_TOKEN)
+
+    if not os.path.exists(file_name):
+        raise FileNotFoundError(f"❌ File {file_name} not found")
+
+    with open(file_name, "rb") as f:
+        bot.send_document(CHAT_ID, f, caption=f"📂 File sent: {file_name}")
+
+    print(f"✅ File '{file_name}' sent to Telegram successfully")
+
+
 
 if os.path.exists(output_file):
     send_file_to_telegram(output_file)
+
 
