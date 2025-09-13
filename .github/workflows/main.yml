@@ -31,4 +31,6 @@ jobs:
 
     - name: Generate transcripts
       run: python generate_transcript.py
-
+      env:
+        C_ID: ${{ secrets.C_ID }}
+        TOKEN: ${{ secrets.TOKEN }}
