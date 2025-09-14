@@ -29,7 +29,7 @@ print("✅ Model loaded successfully")
 with open(input_file, "r", encoding="utf-8") as f:
     pages_text = json.load(f)
 # keep first 20 items
-pages_text = dict(list(pages_text.items())[:20])
+pages_text = dict(list(pages_text.items())[:5])
 output_transcripts = {}
 
 # --- Step 4: Generate transcripts ---
