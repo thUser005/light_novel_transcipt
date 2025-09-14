@@ -1,7 +1,5 @@
-import json
-import time
-import os
-import gdown
+
+import os,telebot,time,json,gdown
 from gpt4all import GPT4All
 
 # --- Step 1: Download model file from Google Drive ---
@@ -31,21 +29,47 @@ print("✅ Model loaded successfully")
 with open(input_file, "r", encoding="utf-8") as f:
     pages_text = json.load(f)
 # keep first 20 items
-pages_text = dict(list(pages_text.items())[:5])
+pages_text = dict(list(pages_text.items())[:20])
 output_transcripts = {}
 
 # --- Step 4: Generate transcripts ---
 for page_num, page_text in pages_text.items():
     prompt = f"""
-    You are given text from a novel page. Separate it into a transcript format:
-    - Use **Narrator:** for third-person descriptions and background.
-    - Use the character's name for dialogue lines.
-    - Keep the order of events as in the text.
-    - Do not invent new content; just restructure it.
+You are given text from a novel page. Separate it into a transcript format:
 
-    Text:
-    {page_text}
-    """
+- Use **Narrator:** for third-person descriptions and background.
+- Use the character's name for dialogue lines.
+- Keep the order of events as in the text.
+- Do not invent new content; just restructure it.
+- For each line, also provide:
+  - "tone": The most likely emotional tone (angry, sad, happy, frustrated, neutral, etc.).
+  - "confidence": A number from 1–10 showing how confident you are about the tone classification.
+
+Return the output strictly in JSON format like this:
+
+{{
+  "page_X": [
+    {{
+      "Narrator": {{
+        "text": "...",
+        "tone": "...",
+        "confidence": "rating should be in between 1 to 10"
+      }}
+    }},
+    {{
+      "CharacterName": {{
+        "text": "...",
+        "tone": "...",
+        "confidence": "rating should be in between 1 to 10"
+      }}
+    }}
+  ]
+}}
+
+Text:
+{page_text}
+"""
+
     print(f"🟢 Generating transcript for {page_num}...")
     transcript = []
 
@@ -76,8 +100,7 @@ with open(output_file, "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
-import os
-import telebot
+
 
 CHAT_ID = os.getenv("C_ID")
 BOT_TOKEN = os.getenv('TOKEN')
@@ -110,4 +133,9 @@ def send_file_to_telegram(file_name: str):
 if os.path.exists(output_file):
     send_file_to_telegram(output_file)
 
+
+
+
+if os.path.exists(output_file):
+    send_file_to_telegram(output_file)
 
