@@ -133,9 +133,3 @@ def send_file_to_telegram(file_name: str):
 if os.path.exists(output_file):
     send_file_to_telegram(output_file)
 
-
-
-
-if os.path.exists(output_file):
-    send_file_to_telegram(output_file)
-
