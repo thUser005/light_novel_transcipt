@@ -1,5 +1,4 @@
-
-import os,telebot,time,json,gdown
+import os, telebot, time, json, gdown
 from gpt4all import GPT4All
 
 # --- Step 1: Download model file from Google Drive ---
@@ -7,7 +6,7 @@ from gpt4all import GPT4All
 drive_url = "https://drive.google.com/uc?id=1c2XOp78-KgIECyMWpvhKyDVj74KiFv5L"
 
 input_file = "pages_text.json"
-output_file = 'output.json'
+output_file = "output.json"
 
 # Local save path
 model_dir = "models"
@@ -28,47 +27,19 @@ print("✅ Model loaded successfully")
 # --- Step 3: Load pages_text.json ---
 with open(input_file, "r", encoding="utf-8") as f:
     pages_text = json.load(f)
-# keep first 20 items
+
+# keep only first 5 items (adjust as needed)
 pages_text = dict(list(pages_text.items())[:5])
 output_transcripts = {}
 
-# --- Step 4: Generate transcripts ---
+# --- Step 4: Load prompt template from prompt.txt ---
+with open("prompt.txt", "r", encoding="utf-8") as pf:
+    base_prompt = pf.read()
+
+# --- Step 5: Generate transcripts ---
 for page_num, page_text in pages_text.items():
-    prompt = f"""
-You are given text from a novel page. Separate it into a transcript format:
-
-- Use **Narrator:** for third-person descriptions and background.
-- Use the character's name for dialogue lines.
-- Keep the order of events as in the text.
-- Do not invent new content; just restructure it.
-- For each line, also provide:
-  - "tone": The most likely emotional tone (angry, sad, happy, frustrated, neutral, etc.).
-  - "confidence": A number from 1–10 showing how confident you are about the tone classification.
-
-Return the output strictly in JSON format like this:
-
-{{
-  "page_X": [
-    {{
-      "Narrator": {{
-        "text": "...",
-        "tone": "...",
-        "confidence": "rating should be in between 1 to 10"
-      }}
-    }},
-    {{
-      "CharacterName": {{
-        "text": "...",
-        "tone": "...",
-        "confidence": "rating should be in between 1 to 10"
-      }}
-    }}
-  ]
-}}
-
-Text:
-{page_text}
-"""
+    # Replace placeholder with actual text
+    prompt = base_prompt.replace("{page_text}", page_text)
 
     print(f"🟢 Generating transcript for {page_num}...")
     transcript = []
@@ -77,47 +48,35 @@ Text:
         for token in model.generate(prompt, max_tokens=1000, streaming=True):
             transcript.append(token)
 
-    structured_page = []
-    full_text = "".join(transcript).split("\n")
-    for line in full_text:
-        line = line.strip()
-        if not line:
-            continue
-        if line.startswith("**Narrator:**"):
-            structured_page.append({"Narrator": line.replace("**Narrator:**", "").strip()})
-        elif ":" in line:
-            char, speech = line.split(":", 1)
-            structured_page.append({char.strip(): speech.strip()})
-        else:
-            structured_page.append({"Unknown": line})
+    # Join model output
+    full_output = "".join(transcript).strip()
 
-    output_transcripts[page_num] = structured_page
-    print(f"\n✅ {page_num} transcript generated\n")
+    # Save raw model response as is (since it should already be JSON per prompt)
+    try:
+        parsed_json = json.loads(full_output)
+        output_transcripts[page_num] = parsed_json.get(page_num, parsed_json)
+    except json.JSONDecodeError:
+        # Fallback: store raw output if JSON parsing fails
+        output_transcripts[page_num] = {"raw_output": full_output}
+
+    print(f"✅ {page_num} transcript generated\n")
     time.sleep(1)
 
-# --- Step 5: Save output.json ---
+# --- Step 6: Save output.json ---
 with open(output_file, "w", encoding="utf-8") as f:
     json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
 
 print("✅ Final structured transcript saved to output.json")
 
-
+# --- Step 7: Send file to Telegram ---
 CHAT_ID = os.getenv("C_ID")
-BOT_TOKEN = os.getenv('TOKEN')
+BOT_TOKEN = os.getenv("TOKEN")
 
 def send_file_to_telegram(file_name: str):
     """
-    Send a file to a Telegram chat using bot token and chat ID
-    stored in the environment variable T_TOKEN.
-    
-    Format of T_TOKEN should be: BOT_TOKEN_CHATID
-    Example: "1234567890:ABCDEFghIJKLmnoPQRstuVWxyZ_-1001234567890"
+    Send a file to a Telegram chat using bot token and chat ID.
+    BOT_TOKEN and C_ID must be set as environment variables.
     """
-    # T_TOKEN = os.getenv("T_TOKEN")
-    # if not T_TOKEN:
-    #     raise ValueError("❌ Environment variable T_TOKEN not set")
-
-
     bot = telebot.TeleBot(BOT_TOKEN)
 
     if not os.path.exists(file_name):
@@ -128,8 +87,5 @@ def send_file_to_telegram(file_name: str):
 
     print(f"✅ File '{file_name}' sent to Telegram successfully")
 
-
-
 if os.path.exists(output_file):
     send_file_to_telegram(output_file)
-
