@@ -4,7 +4,8 @@ on:
   workflow_dispatch:    # manual trigger
   push:                 # triggers on every push
     branches:
-      - main           # or any branch you want
+      - main
+
 jobs:
   generate_transcript:
     name: Generate Transcript (Python 3.12)
@@ -19,15 +20,26 @@ jobs:
       with:
         python-version: '3.12'
 
+    - name: Cache LLaMA model
+      uses: actions/cache@v3
+      with:
+        path: models/Meta-Llama-3-8B-Instruct.Q4_0.gguf
+        key: llama-model-v1
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install gpt4all gdown telebot
 
-    # - name: Download GPT4All model
-    #   run: |
-    #     mkdir -p models
-    #     wget -O models/Meta-Llama-3-8B-Instruct.Q4_0.gguf https://gpt4all.io/models/Meta-Llama-3-8B-Instruct.Q4_0.gguf
+    - name: Download model if not cached
+      run: |
+        if [ ! -f models/Meta-Llama-3-8B-Instruct.Q4_0.gguf ]; then
+          mkdir -p models
+          echo "📥 Downloading model..."
+          python -m gdown https://drive.google.com/uc?id=1c2XOp78-KgIECyMWpvhKyDVj74KiFv5L -O models/Meta-Llama-3-8B-Instruct.Q4_0.gguf --fuzzy --resume
+        else
+          echo "✅ Model found in cache"
+        fi
 
     - name: Generate transcripts
       run: python generate_transcript.py
