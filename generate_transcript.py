@@ -13,10 +13,30 @@ model_dir = "models"
 os.makedirs(model_dir, exist_ok=True)
 model_path = os.path.join(model_dir, "Meta-Llama-3-8B-Instruct.Q4_0.gguf")
 
-# Download only if not exists
+import subprocess
+
+# --- Step 1: Download model file if not exists ---
 if not os.path.exists(model_path):
     print("📥 Downloading Meta-Llama-3-8B-Instruct.Q4_0.gguf from Google Drive...")
-    gdown.download(drive_url, model_path, quiet=True)
+
+    try:
+        # Try gdown first (with resume support)
+        gdown.download(drive_url, model_path, quiet=False, fuzzy=True, resume=True)
+    except Exception as e:
+        print(f"⚠️ gdown failed: {e}")
+        print("👉 Falling back to curl...")
+
+        # Use curl as fallback
+        curl_url = "https://drive.google.com/uc?id=1c2XOp78-KgIECyMWpvhKyDVj74KiFv5L"
+        try:
+            subprocess.run(
+                ["curl", "-L", curl_url, "-o", model_path],
+                check=True
+            )
+            print("✅ Model downloaded with curl")
+        except subprocess.CalledProcessError as ce:
+            print(f"❌ curl failed: {ce}")
+            exit(1)
 else:
     print("✅ Model already exists locally")
 
