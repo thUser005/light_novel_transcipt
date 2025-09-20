@@ -44,7 +44,7 @@ with open(input_file, "r", encoding="utf-8") as f:
     pages_text = json.load(f)
 
 # Keep first 5 pages for testing (adjust as needed)
-pages_text = dict(list(pages_text.items())[:5])
+pages_text = dict(list(pages_text.items())[:])
 
 # --- Sanitization ---
 def sanitize_text(text):
@@ -117,3 +117,4 @@ def send_file_to_telegram(file_name: str):
 
 if os.path.exists(output_file):
     send_file_to_telegram(output_file)
+
