@@ -1,6 +1,16 @@
-You are given a page of a novel. Write a concise synopsis of the page.
+You are given a page of a novel. 
 
+1. Write a concise synopsis of the page. 
+2. Identify which characters or character images appeared in this page. 
+
+Format your answer as plain text, like this:
+
+Synopsis:
+<your synopsis here>
+
+Character Images:
+<list of characters or entities appearing here>
+
+Do not add comments, page numbers, labels, or metadata outside this structure.
 Text:
 {page_text}
-
-Output only the synopsis in plain text, do not add any comments, page numbers and labels or metadata. 
