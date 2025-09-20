@@ -1,29 +1,6 @@
-You are given text from a novel page. Convert it into a transcript.
+You are given a page of a novel. Write a concise synopsis of the page.
 
-Rules:
-1. Output ONLY a JSON array of objects.
-2. Each object must have exactly one key:
-   - "Narrator" for descriptive sentences.
-   - Character name for dialogue lines.
-3. Do NOT include page numbers, metadata, or any other extra keys.
-4. Preserve the order of sentences exactly as in the text.
-5. Do NOT invent new content or modify the sentences. Only restructure them into objects.
-
-Example:
-
-Input text:
-The wind howled through the trees as John approached the old house. 
-"Are you sure we should be doing this?" Mary whispered, clutching his arm. 
-He looked back at her, eyes determined. "We have no choice." 
-A crow cawed somewhere above, and the door creaked open on its own.
-
-Output JSON:
-[
-  {"Narrator": "The wind howled through the trees as John approached the old house."},
-  {"Mary": "Are you sure we should be doing this?"},
-  {"John": "We have no choice."},
-  {"Narrator": "A crow cawed somewhere above, and the door creaked open on its own."}
-]
-
-Text to process:
+Text:
 {page_text}
+
+Output only the synopsis in plain text, do not add any comments, page numbers and labels or metadata. 

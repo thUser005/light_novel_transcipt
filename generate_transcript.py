@@ -7,11 +7,12 @@ import gdown
 from gpt4all import GPT4All
 from datetime import datetime, timedelta
 import unicodedata
+import re
 
 # --- Config ---
 drive_url = "https://drive.google.com/uc?id=1c2XOp78-KgIECyMWpvhKyDVj74KiFv5L"
 input_file = "pages_text.json"
-output_file = "output.json"
+output_file = "summary_output.txt"
 model_dir = "models"
 os.makedirs(model_dir, exist_ok=True)
 model_path = os.path.join(model_dir, "Meta-Llama-3-8B-Instruct.Q4_0.gguf")
@@ -19,7 +20,7 @@ max_runtime = timedelta(hours=5, minutes=30)  # 5h30min
 
 # --- Step 1: Download model if not exists ---
 if not os.path.exists(model_path):
-    print("📥 Downloading Meta-Llama-3-8B-Instruct.Q4_0.gguf from Google Drive...")
+    print("📥 Downloading model from Google Drive...")
     try:
         gdown.download(drive_url, model_path, quiet=False, fuzzy=True, resume=True)
     except Exception as e:
@@ -39,23 +40,20 @@ model = GPT4All("Meta-Llama-3-8B-Instruct.Q4_0.gguf", model_path=model_dir, devi
 print("✅ Model loaded successfully")
 
 # --- Step 3: Load pages_text.json ---
-import re
-
 with open(input_file, "r", encoding="utf-8") as f:
     pages_text = json.load(f)
 
-# Keep only first 5 pages for testing (adjust as needed)
+# Keep first 5 pages for testing (adjust as needed)
 pages_text = dict(list(pages_text.items())[:5])
 
-# --- Sanitization for better model usage ---
+# --- Sanitization ---
 def sanitize_text(text):
-    # Normalize unicode characters
     text = unicodedata.normalize("NFKC", text)
-    # Replace multiple spaces/tabs/newlines with single space
     text = re.sub(r'\s+', ' ', text)
-    # Strip leading/trailing spaces
-    text = text.strip()
-    return text
+    return text.strip()
+
+for page_num in pages_text:
+    pages_text[page_num] = sanitize_text(pages_text[page_num])
 
 print("✅ pages_text.json loaded and sanitized successfully")
 
@@ -65,58 +63,46 @@ try:
         base_prompt = pf.read()
     print("✅ prompt.txt loaded successfully")
 except FileNotFoundError:
-    print("❌ prompt.txt not found. Please provide the prompt.txt file.")
+    print("❌ prompt.txt not found. Please provide prompt.txt with the summary instruction.")
     exit(1)
 
-# --- Step 5: Generate transcripts ---
-output_transcripts = []  # flat list for all pages
+# --- Step 5: Generate summaries ---
 start_time = datetime.now()
-for page_num in pages_text:
-    pages_text[page_num] = sanitize_text(pages_text[page_num])
-    
+
 for page_num, page_text in pages_text.items():
     try:
-
         # Stop if runtime exceeds max_runtime
         if datetime.now() - start_time > max_runtime:
             print("⏱ Max runtime exceeded. Stopping processing...")
             break
 
-        print(f"🟢 Processing {page_num}...")
-        prompt = base_prompt.replace("{page_text}", str(page_text))
-        transcript = []
+        print(f"🟢 Summarizing {page_num}...")
+
+        # Replace placeholder in prompt with actual page content
+        prompt = base_prompt.replace("{page_text}", page_text)
+        summary_tokens = []
 
         with model.chat_session():
             for token in model.generate(prompt, max_tokens=1000, streaming=True):
-                transcript.append(token)
+                summary_tokens.append(token)
 
-        full_text = "".join(transcript).split("\n")
-        for line in full_text:
-            line = line.strip()
-            if not line:
-                continue
-            if line.startswith("**Narrator:**"):
-                output_transcripts.append({"Narrator": line.replace("**Narrator:**", "").strip()})
-            elif ":" in line:
-                char, speech = line.split(":", 1)
-                output_transcripts.append({char.strip(): speech.strip()})
-            else:
-                output_transcripts.append({"Narrator": line})
+        summary_text = "".join(summary_tokens).strip()
 
-        print(f"✅ Transcript from {page_num} appended\n")
+        # --- Step 6: Save summary to text file (append mode) ---
+        with open(output_file, "a", encoding="utf-8") as f:
+            f.write(f"--- Summary of {page_num} ---\n")
+            f.write(summary_text + "\n\n")
+
+        print(f"✅ Summary for {page_num} saved\n")
         time.sleep(1)
 
     except Exception as e:
         print(f"⚠️ Error processing {page_num}: {e}. Skipping to next page.")
         continue
 
-# --- Step 6: Save output.json ---
-with open(output_file, "w", encoding="utf-8") as f:
-    json.dump(output_transcripts, f, ensure_ascii=False, indent=2)
+print(f"✅ All summaries saved in '{output_file}'")
 
-print("✅ Final structured transcript saved to output.json")
-
-# --- Step 7: Send file to Telegram ---
+# --- Optional: send summary file to Telegram ---
 CHAT_ID = os.getenv("C_ID")
 BOT_TOKEN = os.getenv("TOKEN")
 
