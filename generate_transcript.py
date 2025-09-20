@@ -41,18 +41,18 @@ print("✅ Model loaded successfully")
 with open(input_file, "r", encoding="utf-8") as f:
     pages_text = json.load(f)
 
-# if below line uncomment do not modify this or remove its for testing.
-pages_text = pages_text[:5]
+# Keep only first 5 pages for testing (adjust as needed)
+pages_text = dict(list(pages_text.items())[:5])
 
 # --- Step 4: Load prompt template from prompt.txt ---
-base_prompt = ''
 try:
     with open("prompt.txt", "r", encoding="utf-8") as pf:
         base_prompt = pf.read()
     print("✅ prompt.txt loaded successfully")
 except FileNotFoundError:
-    print("⚠️ prompt.txt not found. Using default fallback prompt.")
-   
+    print("❌ prompt.txt not found. Please provide the prompt.txt file.")
+    exit(1)
+
 # --- Step 5: Generate transcripts ---
 output_transcripts = []  # flat list for all pages
 start_time = datetime.now()
@@ -65,7 +65,6 @@ for page_num, page_text in pages_text.items():
             break
 
         print(f"🟢 Processing {page_num}...")
-        # Replace placeholder {page_text} inside prompt
         prompt = base_prompt.replace("{page_text}", str(page_text))
         transcript = []
 
@@ -73,21 +72,19 @@ for page_num, page_text in pages_text.items():
             for token in model.generate(prompt, max_tokens=1000, streaming=True):
                 transcript.append(token)
 
-        structured_page = []
         full_text = "".join(transcript).split("\n")
         for line in full_text:
             line = line.strip()
             if not line:
                 continue
             if line.startswith("**Narrator:**"):
-                structured_page.append({"Narrator": line.replace("**Narrator:**", "").strip()})
+                output_transcripts.append({"Narrator": line.replace("**Narrator:**", "").strip()})
             elif ":" in line:
                 char, speech = line.split(":", 1)
-                structured_page.append({char.strip(): speech.strip()})
+                output_transcripts.append({char.strip(): speech.strip()})
             else:
-                structured_page.append({"Narrator": line})
+                output_transcripts.append({"Narrator": line})
 
-        output_transcripts.extend(structured_page)
         print(f"✅ Transcript from {page_num} appended\n")
         time.sleep(1)
 
