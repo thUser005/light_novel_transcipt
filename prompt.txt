@@ -1,33 +1,11 @@
-You are given text from a novel page. Separate it into a transcript format:
+You are given text from a novel page. Convert it into transcript format.
 
-- Use **Narrator:** for third-person descriptions and background.
-- Use the character's name for dialogue lines.
-- Keep the order of events as in the text.
-- Do not invent new content; just restructure it.
-- For each line, also provide:
-  - "tone": The most likely emotional tone (angry, sad, happy, frustrated, neutral, etc.).
-  - "confidence": A number from 1–10 showing how confident you are about the tone classification.
-
-Return the output strictly in JSON format like this:
-
-{
-  "page_X": [
-    {
-      "Narrator": {
-        "text": "...",
-        "tone": "...",
-        "confidence": "rating should be in between 1 to 10"
-      }
-    },
-    {
-      "CharacterName": {
-        "text": "...",
-        "tone": "...",
-        "confidence": "rating should be in between 1 to 10"
-      }
-    }
-  ]
-}
+Rules:
+- Output ONLY a JSON array of objects.
+- Each object must have exactly one key: either "Narrator" or the character's name.
+- Do NOT include page numbers or any other wrapping keys.
+- Preserve the order of sentences.
+- Do not invent new content, only restructure the given text.
 
 Text:
 {page_text}
