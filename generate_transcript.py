@@ -41,6 +41,8 @@ print("✅ Model loaded successfully")
 with open(input_file, "r", encoding="utf-8") as f:
     pages_text = json.load(f)
 
+# if below line uncomment do not modify this or remove its for testing.
+page_text = pages_text[:5]
 
 # --- Step 4: Load prompt template from prompt.txt ---
 base_prompt = ''
