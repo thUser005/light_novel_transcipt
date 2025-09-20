@@ -6,6 +6,7 @@ import telebot
 import gdown
 from gpt4all import GPT4All
 from datetime import datetime, timedelta
+import unicodedata
 
 # --- Config ---
 drive_url = "https://drive.google.com/uc?id=1c2XOp78-KgIECyMWpvhKyDVj74KiFv5L"
@@ -38,11 +39,25 @@ model = GPT4All("Meta-Llama-3-8B-Instruct.Q4_0.gguf", model_path=model_dir, devi
 print("✅ Model loaded successfully")
 
 # --- Step 3: Load pages_text.json ---
+import re
+
 with open(input_file, "r", encoding="utf-8") as f:
     pages_text = json.load(f)
 
 # Keep only first 5 pages for testing (adjust as needed)
 pages_text = dict(list(pages_text.items())[:5])
+
+# --- Sanitization for better model usage ---
+def sanitize_text(text):
+    # Normalize unicode characters
+    text = unicodedata.normalize("NFKC", text)
+    # Replace multiple spaces/tabs/newlines with single space
+    text = re.sub(r'\s+', ' ', text)
+    # Strip leading/trailing spaces
+    text = text.strip()
+    return text
+
+print("✅ pages_text.json loaded and sanitized successfully")
 
 # --- Step 4: Load prompt template from prompt.txt ---
 try:
@@ -56,9 +71,12 @@ except FileNotFoundError:
 # --- Step 5: Generate transcripts ---
 output_transcripts = []  # flat list for all pages
 start_time = datetime.now()
-
+for page_num in pages_text:
+    pages_text[page_num] = sanitize_text(pages_text[page_num])
+    
 for page_num, page_text in pages_text.items():
     try:
+
         # Stop if runtime exceeds max_runtime
         if datetime.now() - start_time > max_runtime:
             print("⏱ Max runtime exceeded. Stopping processing...")
